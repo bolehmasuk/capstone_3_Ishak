@@ -1,6 +1,8 @@
+import os
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
 
+# --- FUNGSI FORMATTING & TOKEN ---
 def get_clean_text(content):
     if isinstance(content, str): return content
     elif isinstance(content, list):
@@ -24,9 +26,37 @@ def extract_token_usage(msg):
             tot_tok = getattr(usage, 'total_token_count', in_tok + out_tok)
     return in_tok, out_tok, tot_tok
 
-def setup_ui():
+# --- FUNGSI UI & AUTENTIKASI ---
+def setup_page():
+    """Hanya inisialisasi config agar bisa diletakkan paling atas."""
     st.set_page_config(page_title="Multi-Agent RAG Chatbot", page_icon="🤖", layout="centered")
     st.markdown("<style>.main {background-color: #f9f9f9;} .stChatInput {padding-bottom: 20px;} .stChatMessage {gap: 1rem;}</style>", unsafe_allow_html=True)
+
+def check_password():
+    """Menampilkan form login dan memverifikasi kredensial dari .env"""
+    def password_entered():
+        if st.session_state["username"] == os.getenv("APP_USERNAME", "admin") and st.session_state["password"] == os.getenv("APP_PASSWORD", "admin123"):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"] 
+            del st.session_state["username"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if st.session_state.get("password_correct"):
+        return True
+
+    st.title("🔐 Login Sistem")
+    st.text_input("Username", key="username")
+    st.text_input("Password", type="password", key="password")
+    st.button("Login", on_click=password_entered)
+
+    if "password_correct" in st.session_state and not st.session_state["password_correct"]:
+        st.error("😕 Username atau Password salah!")
+        
+    return False
+
+def render_header():
+    """Menampilkan judul aplikasi setelah login berhasil."""
     st.title("🤖 Multi-Agent RAG Chatbot")
     st.markdown("Sistem Chatbot Cerdas berbasis **LangGraph Multi-Agent**, **Qdrant Cloud**, dan **RAG** untuk Analisis Data Resume.")
     st.divider()
@@ -34,7 +64,7 @@ def setup_ui():
 def render_sidebar():
     with st.sidebar:
         st.header("⚙️ Konfigurasi Sistem")
-        provider = st.selectbox("Pilih Provider LLM", ("OpenAI",), help="Model AI yang dipakai untuk menghasilkan jawaban teks. (Ke depannya bisa dikembangkan dan ditambahkan provider lain seperti Anthropic, LLaMA, dll.)")
+        provider = st.selectbox("Pilih Provider LLM", ("OpenAI",), help="Model AI yang dipakai untuk menghasilkan jawaban teks.")
         st.info(f"Model aktif saat ini menggunakan **{provider}**.")
         st.divider()
         if st.button("🗑️ Clear Chat History", use_container_width=True):
@@ -43,6 +73,7 @@ def render_sidebar():
         st.markdown("---\n### 📌 Informasi Aplikasi\n- **Vector DB:** Qdrant Cloud\n- **Embedding:** OpenAI (`text-embedding-3-small`)\n- **Memory:** Min. 3 percakapan\n- **Framework:** LangChain & LangGraph")
     return provider
 
+# --- FUNGSI CHAT LOGIC ---
 def render_chat_history():
     for msg in st.session_state.messages:
         role = "user" if isinstance(msg, HumanMessage) else "assistant"
@@ -54,7 +85,7 @@ def render_chat_history():
                     with st.expander("📊 Usage Details"): st.code(f"Input Token  : {i}\nOutput Token : {o}\nTotal Token  : {t}")
 
 def handle_user_input(provider):
-    if user_input := st.chat_input("Tanyakan sesuatu seputar data resume ...."):
+    if user_input := st.chat_input("Tanyakan sesuatu seputar data resume..."):
         with st.chat_message("user", avatar="👤"): st.markdown(user_input)
         st.session_state.messages.append(HumanMessage(content=user_input))
         
