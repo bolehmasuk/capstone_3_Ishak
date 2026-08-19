@@ -1,0 +1,3 @@
+data diambil dari link berikut:
+https://www.kaggle.com/datasets/snehaanbhawal/resume-dataset
+*berhubung ukuran data kurang lebih sebesar 54MB, maka tidak dapat diunggah ke Github karena batasan ukurannya sebesar 25MB
