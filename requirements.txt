@@ -1,0 +1,10 @@
+streamlit
+langchain
+langchain-google-genai
+langchain-openai
+langchain-community
+langgraph
+qdrant-client
+pandas
+python-dotenv
+langchain_qdrant
