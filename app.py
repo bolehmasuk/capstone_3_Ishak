@@ -1,6 +1,6 @@
 import streamlit as st
 from dotenv import load_dotenv
-from agent_workflow_2 import build_workflow
+from agent_workflow import build_workflow
 from utils import setup_page, check_password, render_header, render_sidebar, render_chat_history, handle_user_input
 
 # 1. Inisialisasi Environment & Pengaturan Halaman Dasar
