@@ -89,7 +89,10 @@ def rag_agent_node(state: AgentState):
     llm = get_llm(state["llm_provider"])
     
     docs = retriever.invoke(last_message)
-    context = "\n\n".join([d.page_content for d in docs])
+    context = "\n\n".join([
+       f"[ID: {d.metadata.get('id')} | Kategori: {d.metadata.get('category')}]\n{d.page_content}"
+       for d in docs
+   ])
     
     if not context:
         return {"messages": [AIMessage(content="Maaf, saya tidak menemukan informasi terkait di database.")]}
